@@ -1,0 +1,110 @@
+---
+title: "Taller 2 y 3 de fundamentos de programación."
+output: html_notebook.
+author: Sebastián Morales.
+---
+
+1. Cree un repositorio de Github que se llame Taller2_Apellido. Use su primer apellido
+en reemplazo de la palabra Apellido en el nombre. Este repositorio debe ser privado.
+Después de crearlo, cree un proyecto en RStudio y vincúlelo al repositorio que creó.
+
+2. Dentro de este proyecto, cree un notebook en el que va a desarrollar el taller.
+
+3. Use la siguiente función para descargar de la API del Banco Mundial la información
+de los indicadores NY.ADJ.NNTY.PC.KD, que contiene el ingreso nacional percapita
+neto ajustado, y SP.DYN.LE00.IN que contiene la expectativa de vida al nacer para
+ambos sexos.
+
+Librerías varias
+```{r}
+library(tidyverse)
+library(lubridate)
+library(haven)
+library(readxl)
+library(knitr)
+```
+Limpiar espacio de trabajo
+```{r}
+rm(list = ls())
+```
+
+
+```{r}
+#install.packages("utf8")
+#install.packages("wbstats")
+library(wbstats)
+datos_bm <- wb_data(indicator = c("NY.ADJ.NNTY.PC.KD", "SP.DYN.LE00.IN"), start_date = 2000, end_date = 2020, return_wide = FALSE)
+#View(datos_bm)
+head(datos_bm)
+```
+
+4. Use la siguiente función para descargar la tabla de información disponible para los
+países:
+
+```{r}
+paises_bm <- wb_countries()
+#View(paises_bm)
+head(paises_bm)
+```
+
+5. En la base países_bm seleccione las siguientes variables:iso3c, region, income_level.
+
+```{r}
+paises_bm1 <- paises_bm %>%
+  select(iso3c, region, income_level) 
+#View(paises_bm1)
+head(paises_bm1)
+```
+
+6. Una las bases de datos datos_bm y países_bm.
+```{r}
+# limpiar dataset "datos_bm"
+union_bm <- left_join(paises_bm1,datos_bm,by = "iso3c")
+#onion_bm <- left_join(datos_bm,paises_bm1,by = "iso3c")
+head(union_bm)
+#head(onion_bm)
+#View(union_bm)
+#View(onion_bm)
+
+#elijo union_bm
+```
+
+7. En la variable indicator_id cambie los valores NY.ADJ.NNTY.PC.KD y SP.DYN.LE00.IN
+por ing_nac_ajustado y expectativa_vida, respectivamente.
+```{r}
+union_bm$indicator_id[union_bm$indicator_id == "NY.ADJ.NNTY.PC.KD"] <- "ing_nac_ajustado"
+union_bm$indicator_id[union_bm$indicator_id == "SP.DYN.LE00.IN"] <- "expectativa_vida"
+head(union_bm)
+#View(union_bm)
+```
+ESTO PARECE SER INEFICIENTE
+
+8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el
+argumento id_cols dentro de esta función.
+
+```{r}
+pivot_wider()
+?pivot_wider
+```
+
+```{r}
+bm_ancha <- pivot_wider(union_bm, 
+                   names_from =`indicator_id`, 
+                   values_from =  value)
+head(bm_ancha)
+View(bm_ancha)
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

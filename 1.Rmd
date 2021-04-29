@@ -30,7 +30,7 @@ rm(list = ls())
 ```{r}
 #install.packages("utf8")
 #install.packages("wbstats")
-library(wbstats)
+#library(wbstats)
 datos_bm <- wb_data(indicator = c("NY.ADJ.NNTY.PC.KD", "SP.DYN.LE00.IN"), start_date = 2000, end_date = 2020, return_wide = FALSE)
 #View(datos_bm)
 head(datos_bm)
@@ -67,11 +67,11 @@ head(union_bm)
 ```
 
 7. En la variable indicator_id cambie los valores NY.ADJ.NNTY.PC.KD y SP.DYN.LE00.IN por ing_nac_ajustado y expectativa_vida, respectivamente.
-```{r}
 
-union_bm <- union_bm %>% mutate(indicador_id = recode(indicator_id, "NY.ADJ.NNTY.PC.KD" = "ing_nac_ajustado", "SP.DYN.LE00.IN" = "expectativa_vida"))
-head(union_bm)
-View(union_bm)
+```{r}
+union_bm1 <- union_bm %>% mutate(indicador_id = recode(indicator_id, NY.ADJ.NNTY.PC.KD = "ing_nac_ajustado", SP.DYN.LE00.IN = "expectativa_vida"))
+head(union_bm1)
+#View(union_bm)
 ```
 
 
@@ -102,8 +102,7 @@ mtcars %>%
      as.data.frame()
 ```
 
-8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el
-argumento id_cols dentro de esta función.
+8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el argumento id_cols dentro de esta función.
 
 ```{r}
 pivot_wider()
@@ -112,11 +111,57 @@ pivot_wider()
 ```
 
 ```{r}
-View(union_bm)
-bm_ancha <- pivot_wider(union_bm, 
-                   id_cols = ,
-                   names_from = ´indicator_id´, 
+View(union_bm1)
+bm_ancha <- pivot_wider(union_bm1,
+                   names_from = "indicador_id", 
                    values_from =  value)
 head(bm_ancha)
 View(bm_ancha)
+bm_ancha1 <- bm_ancha %>%
+  select(indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado, expectativa_vida) 
+head(bm_ancha1)
+View(bm_ancha1)
 ```
+
+9. Reorganice las variables para que aparezcan las siguientes al comienzo de la base de datos: region, income_level, country, date, ing_nac_ajustado y expectativa_vida.
+```{r}
+bm_ancha2 <- bm_ancha1 %>%
+  select(region, income_level, country, date, ing_nac_ajustado, expectativa_vida, indicator_id, indicator, iso2c, iso3c)
+head(bm_ancha2)
+```
+
+10. Usando la base anterior, cree una base de datos que solamente contenga las variables country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Esta base debe llamarse bm_principales. Use alguna función del paquete naniar para explorar los valores faltantes en esta base. ¿Cuál variable parece tener mayor número de valores faltantes?
+```{r}
+bm_principales <- bm_ancha2 %>%
+  select(country, date, region, income_level, ing_nac_ajustado, expectativa_vida)
+head(bm_principales)
+#View(bm_principales)
+```
+
+```{r}
+install.packages("naniar")
+library(naniar)
+?naniar
+vis_miss(bm_principales)
+gg_miss_var(bm_principales)
+```
+Comentario
+La variable con mayor numero de datos faltantes es ing_nac_ajustado.
+
+11. Use la función gg_miss_fct para mostrar el comportamiento de los valores faltantes en esta base de datos, de acuerdo con las categorías de la variable region. ¿En cuál región parecen haber más valores faltantes para las variables expectativa_vida e ing_nac_ajustado? Repita el ejercicio pero ahora usando la variable income_level. ¿En cuál nivel de ingreso parecen haber más valores faltantes para las variables mencionadas.
+
+```{r}
+gg_miss_fct(bm_principales, region)
+gg_miss_fct(bm_principales, income_level)
+```
+Comentario:
+- En la región de Asia Oriental y el Pacífico parece tener más datos faltantes de la variable "ing_nac_ajustado". Igualmente, las regiones de Asia oriental y el Pacífico y Latinomérica y el Caribe parecen tener más datos faltantos que el resto de regiones en la variable "expectativa_vida".
+
+- El nivel de ingreso alto parece tener más datos faltantes con respecto al resto de niveles de ingreso, tanto para la variable "ing_nac_ajustado" como para la variable "expectativa_vida".
+
+12. Filtre el año 2015 y realice un diagrama de dispersión de las variables expectativa_vida (eje y) e ing_nac_ajustado (eje x) para ese año. El color de los puntos debe depender de la variable region. ¿Qué muestra la gráfica sobre la relación entre las variables para el 2015?
+
+```{r}
+
+```
+

@@ -8,12 +8,9 @@ author: Sebastián Morales.
 
 2. Dentro de este proyecto, cree un notebook en el que va a desarrollar el taller.
 
-3. Use la siguiente función para descargar de la API del Banco Mundial la información
-de los indicadores NY.ADJ.NNTY.PC.KD, que contiene el ingreso nacional percapita
-neto ajustado, y SP.DYN.LE00.IN que contiene la expectativa de vida al nacer para
-ambos sexos.
+3. Use la siguiente función para descargar de la API del Banco Mundial la información de los indicadores NY.ADJ.NNTY.PC.KD, que contiene el ingreso nacional per capita neto ajustado, y SP.DYN.LE00.IN que contiene la expectativa de vida al nacer para ambos sexos.
 
-Librerías varias
+Librerías varias.
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -74,54 +71,24 @@ head(union_bm1)
 #View(union_bm)
 ```
 
-
-```{r}
-#ESTO ES INEFICIENTE
-union_bm$indicator_id[union_bm$indicator_id == "NY.ADJ.NNTY.PC.KD"] <- "ing_nac_ajustado"
-union_bm$indicator_id[union_bm$indicator_id == "SP.DYN.LE00.IN"] <- "expectativa_vida"
-head(union_bm)
-#View(union_bm)
-```
-
-```{r}
-#NO SE PORQUE NO FUNCIONA
-union_bm %>%
-  mutate(indicator_id = replace(indicator_id, indicator_id == "NY.ADJ.NNTY.PC.KD", "ing_nac_ajustado")) %>%
-  mutate(indicator_id = replace(indicator_id, indicator_id == "SP.DYN.LE00.IN", "expectativa_vida"))
-View(union_bm)
-#NO SE PORQUE NO FUNCIONA
-```
-
-```{r}
-#OTRA COSA
-mtcars$mpg[mtcars$cyl == 4] <- NA
-
-
-mtcars %>%
-     mutate(mpg=replace(mpg, cyl==4, NA)) %>%
-     as.data.frame()
-```
-
 8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el argumento id_cols dentro de esta función.
 
 ```{r}
-pivot_wider()
-?pivot_wider
-??id_cols
+#?pivot_wider
 ```
 
 ```{r}
-View(union_bm1)
 bm_ancha <- pivot_wider(union_bm1,
                    names_from = "indicador_id", 
                    values_from =  value)
 head(bm_ancha)
-View(bm_ancha)
+#View(bm_ancha)
 bm_ancha1 <- bm_ancha %>%
   select(indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado, expectativa_vida) 
 head(bm_ancha1)
-View(bm_ancha1)
+#View(bm_ancha1)
 ```
+
 
 9. Reorganice las variables para que aparezcan las siguientes al comienzo de la base de datos: region, income_level, country, date, ing_nac_ajustado y expectativa_vida.
 ```{r}
@@ -139,9 +106,10 @@ head(bm_principales)
 ```
 
 ```{r}
-install.packages("naniar")
-library(naniar)
+#install.packages("naniar")
+#library(naniar)
 ?naniar
+?vis_miss
 vis_miss(bm_principales)
 gg_miss_var(bm_principales)
 ```
@@ -162,6 +130,16 @@ Comentario:
 12. Filtre el año 2015 y realice un diagrama de dispersión de las variables expectativa_vida (eje y) e ing_nac_ajustado (eje x) para ese año. El color de los puntos debe depender de la variable region. ¿Qué muestra la gráfica sobre la relación entre las variables para el 2015?
 
 ```{r}
-
+bm_principales2015 <- bm_principales %>% filter(date == 2015)
+head(bm_principales2015)
+#View(bm_principales2015)
 ```
 
+```{r}
+ggplot(data = bm_principales2015, 
+       mapping = aes(x = ing_nac_ajustado,
+                     y = expectativa_vida)) +
+  geom_point(na.rm = T)
+```
+
+13. Filtre la información de Colombia y realice un diagrama de lineas que muestre la evolución de expectativa_vida en el periodo de análisis. ¿Qué muestra la gráfica sobre la evolución de la expectativa de vida desde el 2000?

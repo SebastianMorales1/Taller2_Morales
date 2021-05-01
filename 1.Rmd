@@ -27,7 +27,7 @@ rm(list = ls())
 ```{r}
 #install.packages("utf8")
 #install.packages("wbstats")
-#library(wbstats)
+library(wbstats)
 datos_bm <- wb_data(indicator = c("NY.ADJ.NNTY.PC.KD", "SP.DYN.LE00.IN"), start_date = 2000, end_date = 2020, return_wide = FALSE)
 #View(datos_bm)
 head(datos_bm)
@@ -66,7 +66,7 @@ head(union_bm)
 7. En la variable indicator_id cambie los valores NY.ADJ.NNTY.PC.KD y SP.DYN.LE00.IN por ing_nac_ajustado y expectativa_vida, respectivamente.
 
 ```{r}
-union_bm1 <- union_bm %>% mutate(indicador_id = recode(indicator_id, NY.ADJ.NNTY.PC.KD = "ing_nac_ajustado", SP.DYN.LE00.IN = "expectativa_vida"))
+union_bm1 <- union_bm %>% mutate(indicator_id = recode(indicator_id, NY.ADJ.NNTY.PC.KD = "ing_nac_ajustado", SP.DYN.LE00.IN = "expectativa_vida"))
 head(union_bm1)
 #View(union_bm)
 ```
@@ -74,17 +74,22 @@ head(union_bm1)
 8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el argumento id_cols dentro de esta función.
 
 ```{r}
-#?pivot_wider
+bm_ancha <- pivot_wider(union_bm1,
+                  id_cols = c("indicator", "iso2c", "iso3c", "country", "date", "region", "income_level"),
+                   names_from = "indicator_id", 
+                   values_from =  value)
+head(bm_ancha)
+View(bm_ancha)
 ```
 
 ```{r}
 bm_ancha <- pivot_wider(union_bm1,
-                   names_from = "indicador_id", 
+                   names_from = "indicator_id", 
                    values_from =  value)
 head(bm_ancha)
 #View(bm_ancha)
 bm_ancha1 <- bm_ancha %>%
-  select(indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado, expectativa_vida) 
+  select(indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado, expectativa_vida) 
 head(bm_ancha1)
 #View(bm_ancha1)
 ```
@@ -93,8 +98,10 @@ head(bm_ancha1)
 9. Reorganice las variables para que aparezcan las siguientes al comienzo de la base de datos: region, income_level, country, date, ing_nac_ajustado y expectativa_vida.
 ```{r}
 bm_ancha2 <- bm_ancha1 %>%
-  select(region, income_level, country, date, ing_nac_ajustado, expectativa_vida, indicator_id, indicator, iso2c, iso3c)
+  select(region, income_level, country, date, ing_nac_ajustado, expectativa_vida, indicator, iso2c, iso3c)
+#quitado variable indicator_id
 head(bm_ancha2)
+
 ```
 
 10. Usando la base anterior, cree una base de datos que solamente contenga las variables country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Esta base debe llamarse bm_principales. Use alguna función del paquete naniar para explorar los valores faltantes en esta base. ¿Cuál variable parece tener mayor número de valores faltantes?

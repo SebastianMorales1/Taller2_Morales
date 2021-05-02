@@ -80,25 +80,34 @@ head(bm_ancha)
 
 9. Reorganice las variables para que aparezcan las siguientes al comienzo de la base de datos: region, income_level, country, date, ing_nac_ajustado y expectativa_vida.
 ```{r}
-bm_ancha2 <- bm_ancha1 %>%
+bm_ancha1 <- bm_ancha %>%
   select(region, income_level, country, date, ing_nac_ajustado, expectativa_vida, iso2c, iso3c)
-head(bm_ancha2)
-View(bm_ancha2)
+head(bm_ancha1)
+#View(bm_ancha1)
 ```
 
 10. Usando la base anterior, cree una base de datos que solamente contenga las variables country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Esta base debe llamarse bm_principales. Use alguna función del paquete naniar para explorar los valores faltantes en esta base. ¿Cuál variable parece tener mayor número de valores faltantes?
 ```{r}
-bm_principales <- bm_ancha2 %>%
+bm_principales <- bm_ancha1 %>%
   select(country, date, region, income_level, ing_nac_ajustado, expectativa_vida)
 head(bm_principales)
-View(bm_principales)
+#View(bm_principales)
 ```
 
 ```{r}
 #install.packages("naniar")
 #library(naniar)
-vis_miss(bm_principales)
-gg_miss_var(bm_principales)
+vis_miss(bm_principales) +
+  labs(title = "Visualización de datos faltantes por columna.", 
+       x = "Porcentaje (%) de datos faltantes por columna",
+       y = "Observaciones.")
+```
+
+```{r}
+gg_miss_var(bm_principales) +
+  labs(title = "Número de datos faltantes por variable",
+       x = "Número de datos faltantes",
+       y = "Variables")
 ```
 Comentario
 La variable con mayor numero de datos faltantes es ing_nac_ajustado.
@@ -106,9 +115,19 @@ La variable con mayor numero de datos faltantes es ing_nac_ajustado.
 11. Use la función gg_miss_fct para mostrar el comportamiento de los valores faltantes en esta base de datos, de acuerdo con las categorías de la variable region. ¿En cuál región parecen haber más valores faltantes para las variables expectativa_vida e ing_nac_ajustado? Repita el ejercicio pero ahora usando la variable income_level. ¿En cuál nivel de ingreso parecen haber más valores faltantes para las variables mencionadas.
 
 ```{r}
-gg_miss_fct(bm_principales, region)
-gg_miss_fct(bm_principales, income_level)
+gg_miss_fct(bm_principales, region) +
+  labs(title = "Número de datos faltantes desglosado por la variable 'Region'",
+       x = "Regiones geográficas.",
+       y = "Variables.")
 ```
+
+```{r}
+gg_miss_fct(bm_principales, income_level) + 
+  labs(title = "Número de datos faltantes desglosado por la variable 'Income_levels'",
+       x = "Niveles de ingreso.",
+       y = "Variables.")
+```
+
 Comentario:
 - En la región de Asia Oriental y el Pacífico parece tener más datos faltantes de la variable "ing_nac_ajustado". Igualmente, las regiones de Asia oriental y el Pacífico y Latinoamérica y el Caribe parecen tener más datos faltantos que el resto de regiones en la variable "expectativa_vida".
 
@@ -120,19 +139,21 @@ Comentario:
 bm_principales2015 <- bm_principales %>% filter(date == 2015)
 head(bm_principales2015)
 #View(bm_principales2015)
-#vis_miss(bm_principales2015)
 ```
+
 ```{r}
 ggplot(data = bm_principales2015, 
        mapping = aes(x = ing_nac_ajustado,
                      y = expectativa_vida)) +
-  geom_point(color = "Blue", shape = 0)
+  geom_point(color = "Blue", shape = 0) +
+  labs(title = "Dispersograma de ingreso nacional y expectativa de vida para el año 2015.",
+       x = "Ingreso Nacional Ajustado.",
+       y = "Expectativa de vida.") + theme_light()
 ```
 
 13. Filtre la información de Colombia y realice un diagrama de lineas que muestre la evolución de expectativa_vida en el periodo de análisis. ¿Qué muestra la gráfica sobre la evolución de la expectativa de vida desde el 2000?
 
 ```{r}
-View()
 bm_colombia <- bm_principales %>% filter(country == "Colombia")
 head(bm_colombia)
 #View(bm_colombia)
@@ -140,7 +161,12 @@ head(bm_colombia)
 
 ```{r}
 ggplot(data = bm_colombia, mapping = aes(x = date, y = expectativa_vida)) + 
-  geom_line(color = "purple") 
+  geom_line(color = "purple") +
+  labs(title = "Evolución de la expectativa en los años 2000-2019.",
+       x = "Años.",
+       y = "Expectativa de vida.") +
+  theme_bw()
+
 ```
 
 Comentario:
@@ -159,7 +185,10 @@ ggplot(data = bm_tiempo,
        mapping = aes(x = expectativa_vida,
                      group = date,
                      fill = date)) +
-  geom_density(adjust=1.5, alpha=.4)
+  geom_density(adjust=1.5, alpha=.4) +
+    labs(title = "Densidad de la expectativa de vida en el 2000 y el 2015.",
+       x = "Expectativa de vida.",
+       y = "Densidad.")
 ```
 Comentario:
 Con respecto a la expectativa de vida, se puede ver que el año 2015 tiene un promedio de expectativa de vida más alto, más consolidado y con menor variabilidad cercana a los 75 años de edad, en comparacion al año 2000, donde el promedio es menor cercano a los 72 a 73 años de edad, hay mayor variabilidad y una minoria de poblacion importante con expectativa cerca de los 50 años. En resumen, se puede observar que la expectativa de vida ha subido y concentrado a los 75 años en el año 2015 con repecto al año 2000.
@@ -171,7 +200,10 @@ ggplot(data = bm_principales,
        mapping = aes(x = expectativa_vida,
                      group = region,
                      fill = region)) +
-  geom_density(adjust=1.5, alpha=.4)
+  geom_density(adjust=1.5, alpha=.4) +
+    labs(title = "Densidad de la expectativa de vida por regiones geográficas.",
+       x = "Regiones geográficas.",
+       y = "Densidad.")
 ```
 
 Comentario:

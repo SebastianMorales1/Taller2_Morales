@@ -64,8 +64,6 @@ head(union_bm)
 union_bm1 <- union_bm %>% mutate(indicator_id = recode(indicator_id, NY.ADJ.NNTY.PC.KD = "ing_nac_ajustado", SP.DYN.LE00.IN = "expectativa_vida"))
 head(union_bm1)
 #View(union_bm1)
-#vis_miss(union_bm1)
-#gg_miss_var(union_bm1)
 ```
 
 8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el argumento id_cols dentro de esta función.
@@ -74,9 +72,9 @@ head(union_bm1)
 bm_ancha <- pivot_wider(union_bm1,
                   id_cols = c(-"indicator", -"unit", -"obs_status", -"footnote", -"last_updated", "iso2c", "iso3c", "country", "date", "region", "income_level"),
                    names_from = "indicator_id", 
-                   values_from =  value)
-bm_ancha1 <- bm_ancha %>% select(-"NA")
-head(bm_ancha1)
+                   values_from =  value) %>% 
+  select(-"NA")
+head(bm_ancha)
 #View(bm_ancha1)
 ```
 

@@ -1,0 +1,323 @@
+---
+title: "Taller 2 y 3 de fundamentos de programación."
+output: html_notebook.
+author: Sebastián Morales.
+---
+
+1. Cree un repositorio de Github que se llame Taller2_Apellido. Use su primer apellido en reemplazo de la palabra Apellido en el nombre. Este repositorio debe ser privado.Después de crearlo, cree un proyecto en RStudio y vincúlelo al repositorio que creó.
+
+2. Dentro de este proyecto, cree un notebook en el que va a desarrollar el taller.
+
+3. Use la siguiente función para descargar de la API del Banco Mundial la información de los indicadores NY.ADJ.NNTY.PC.KD, que contiene el ingreso nacional per capita neto ajustado, y SP.DYN.LE00.IN que contiene la expectativa de vida al nacer para ambos sexos.
+
+Librerías varias.
+```{r}
+library(tidyverse)
+library(lubridate)
+library(haven)
+library(readxl)
+library(knitr)
+```
+Limpiar espacio de trabajo
+```{r}
+rm(list = ls())
+```
+
+
+```{r}
+#install.packages("utf8")
+#install.packages("wbstats")
+#library(wbstats)
+datos_bm <- wb_data(indicator = c("NY.ADJ.NNTY.PC.KD", "SP.DYN.LE00.IN"), start_date = 2000, end_date = 2020, return_wide = FALSE)
+#View(datos_bm)
+head(datos_bm)
+```
+
+4. Use la siguiente función para descargar la tabla de información disponible para los
+países:
+
+```{r}
+paises_bm <- wb_countries()
+#View(paises_bm)
+head(paises_bm)
+```
+
+5. En la base países_bm seleccione las siguientes variables:iso3c, region, income_level.
+
+```{r}
+paises_bm1 <- paises_bm %>%
+  select(iso3c, region, income_level) 
+#View(paises_bm1)
+head(paises_bm1)
+```
+
+6. Una las bases de datos datos_bm y países_bm.
+```{r}
+union_bm <- left_join(paises_bm1,datos_bm,by = "iso3c")
+head(union_bm)
+#View(union_bm)
+```
+
+7. En la variable indicator_id cambie los valores NY.ADJ.NNTY.PC.KD y SP.DYN.LE00.IN por ing_nac_ajustado y expectativa_vida, respectivamente.
+
+```{r}
+union_bm1 <- union_bm %>% mutate(indicator_id = recode(indicator_id, NY.ADJ.NNTY.PC.KD = "ing_nac_ajustado", SP.DYN.LE00.IN = "expectativa_vida"))
+head(union_bm1)
+#View(union_bm1)
+```
+
+8. Use la función pivot_wider para transformar la base de datos de manera que se consideren datos limpios (i.e. tidy data). En la base resultante deben haber 8 variables: indicator_id, indicator, iso2c, iso3c, country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Antes de correr la función revise para qué sirve y cómo se usa el argumento id_cols dentro de esta función.
+
+```{r}
+bm_ancha <- pivot_wider(union_bm1,
+                  id_cols = c(-"indicator", -"unit", -"obs_status", -"footnote", -"last_updated", "iso2c", "iso3c", "country", "date", "region", "income_level"),
+                   names_from = "indicator_id", 
+                   values_from =  value) %>% 
+  select(-"NA")
+head(bm_ancha)
+#View(bm_ancha1)
+```
+
+9. Reorganice las variables para que aparezcan las siguientes al comienzo de la base de datos: region, income_level, country, date, ing_nac_ajustado y expectativa_vida.
+```{r}
+bm_ancha1 <- bm_ancha %>%
+  select(region, income_level, country, date, ing_nac_ajustado, expectativa_vida, iso2c, iso3c)
+head(bm_ancha1)
+#View(bm_ancha1)
+```
+
+10. Usando la base anterior, cree una base de datos que solamente contenga las variables country, date, region, income_level, ing_nac_ajustado y expectativa_vida. Esta base debe llamarse bm_principales. Use alguna función del paquete naniar para explorar los valores faltantes en esta base. ¿Cuál variable parece tener mayor número de valores faltantes?
+```{r}
+bm_principales <- bm_ancha1 %>%
+  select(country, date, region, income_level, ing_nac_ajustado, expectativa_vida)
+head(bm_principales)
+#View(bm_principales)
+```
+
+```{r}
+#install.packages("naniar")
+#library(naniar)
+vis_miss(bm_principales) +
+  labs(title = "Visualización de datos faltantes por columna.", 
+       x = "Porcentaje (%) de datos faltantes por columna",
+       y = "Observaciones.")
+```
+
+```{r}
+gg_miss_var(bm_principales) +
+  labs(title = "Número de datos faltantes por variable",
+       x = "Número de datos faltantes",
+       y = "Variables")
+```
+Comentario
+La variable con mayor numero de datos faltantes es ing_nac_ajustado.
+
+11. Use la función gg_miss_fct para mostrar el comportamiento de los valores faltantes en esta base de datos, de acuerdo con las categorías de la variable region. ¿En cuál región parecen haber más valores faltantes para las variables expectativa_vida e ing_nac_ajustado? Repita el ejercicio pero ahora usando la variable income_level. ¿En cuál nivel de ingreso parecen haber más valores faltantes para las variables mencionadas.
+
+```{r}
+gg_miss_fct(bm_principales, region) +
+  labs(title = "Número de datos faltantes desglosado por la variable 'Region'",
+       x = "Regiones geográficas.",
+       y = "Variables.")
+```
+
+```{r}
+gg_miss_fct(bm_principales, income_level) + 
+  labs(title = "Número de datos faltantes desglosado por la variable 'Income_levels'",
+       x = "Niveles de ingreso.",
+       y = "Variables.")
+```
+
+Comentario:
+- En la región de Asia Oriental y el Pacífico parece tener más datos faltantes de la variable "ing_nac_ajustado". Igualmente, las regiones de Asia oriental y el Pacífico y Latinoamérica y el Caribe parecen tener más datos faltantos que el resto de regiones en la variable "expectativa_vida".
+
+- El nivel de ingreso alto parece tener más datos faltantes con respecto al resto de niveles de ingreso, tanto para la variable "ing_nac_ajustado" como para la variable "expectativa_vida".
+
+12. Filtre el año 2015 y realice un diagrama de dispersión de las variables expectativa_vida (eje y) e ing_nac_ajustado (eje x) para ese año. El color de los puntos debe depender de la variable region. ¿Qué muestra la gráfica sobre la relación entre las variables para el 2015?
+
+```{r}
+bm_principales2015 <- bm_principales %>% filter(date == 2015)
+head(bm_principales2015)
+#View(bm_principales2015)
+```
+
+```{r}
+ggplot(data = bm_principales2015, 
+       mapping = aes(x = ing_nac_ajustado,
+                     y = expectativa_vida)) +
+  geom_point(color = "Blue", shape = 0) +
+  labs(title = "Dispersograma de ingreso nacional y expectativa de vida para el año 2015.",
+       x = "Ingreso Nacional Ajustado.",
+       y = "Expectativa de vida.") + theme_light()
+```
+
+13. Filtre la información de Colombia y realice un diagrama de lineas que muestre la evolución de expectativa_vida en el periodo de análisis. ¿Qué muestra la gráfica sobre la evolución de la expectativa de vida desde el 2000?
+
+```{r}
+bm_colombia <- bm_principales %>% filter(country == "Colombia")
+head(bm_colombia)
+#View(bm_colombia)
+```
+
+```{r}
+ggplot(data = bm_colombia, mapping = aes(x = date, y = expectativa_vida)) + 
+  geom_line(color = "purple") +
+  labs(title = "Evolución de la expectativa en los años 2000-2019.",
+       x = "Años.",
+       y = "Expectativa de vida.") +
+  theme_bw()
+```
+
+Comentario:
+El diagrama de expectativa de vida durante los años 2000 a 2019, muestra que la expectativa de vida crece de manera sostenida y uniforme en este periodo de tiempo.
+
+14. Filtre los años 2000 y 2015 y realice una densidad de la variable expectativa_vida en la que se muestre de un color distinto la distribución para cada uno de esos dos años. 
+¿Qué diferencias se puede ver en la distribución de expectativa_vida para estos dos años?
+```{r}
+bm_tiempo <- bm_principales %>% filter(date == 2000| date == 2015)
+head(bm_tiempo)
+#View(bm_tiempo)
+```
+
+```{r}
+ggplot(data = bm_tiempo,
+       mapping = aes(x = expectativa_vida,
+                     group = date,
+                     fill = date)) +
+  geom_density(adjust=1.5, alpha=.4) +
+    labs(title = "Densidad de la expectativa de vida en el 2000 y el 2015.",
+       x = "Expectativa de vida.",
+       y = "Densidad.")
+```
+Comentario:
+Con respecto a la expectativa de vida, se puede ver que el año 2015 tiene un promedio de expectativa de vida más alto, más consolidado y con menor variabilidad cercana a los 75 años de edad, en comparacion al año 2000, donde el promedio es menor cercano a los 72 a 73 años de edad, hay mayor variabilidad y una minoria de poblacion importante con expectativa cerca de los 50 años. En resumen, se puede observar que la expectativa de vida ha subido y concentrado a los 75 años en el año 2015 con repecto al año 2000.
+
+15. Realice una gráfica que muestre la densidad de la variable expectativa_vida de manera separada para cada región. Use las funciones facet_grid o facet_wrap. ¿Qué diferencias importantes se encuentran en la distribución de expectativa_vida entre las regiones?
+
+```{r}
+ggplot(data = bm_principales,
+       mapping = aes(x = expectativa_vida,
+                     group = region,
+                     fill = region)) +
+  geom_density(adjust=1.5, alpha=.4) +
+    labs(title = "Densidad de la expectativa de vida por regiones geográficas.",
+       x = "Regiones geográficas.",
+       y = "Densidad.")
+```
+
+Comentario:
+
+En primer lugar, se observa que la region que, en general, cuenta con una menor expectativa de vida es África Sub-sahariana dónde se ubican gran parte de los países más pobres del mundo, con menor infraestructura social y economica y niveles bajos de calidad de vida y PIB per cápita.
+Después, le sigue el sudeste asiático con un mayor nivel de expectativa de vida ya que a pesar de que hay presencia de economías emergentes como Indonesia, Malasia o Vietnam y economias desarrolladas como Singapur o Brunei, las economias restantes del sudeste asiático cuenta con una menor infraestructura economica y social donde la economia regional depende de la agricultura, así como problemáticas sociales como pobreza y desigualdad, que dejan a la región con una expectativa de vida modesta menor a los 70 años. 
+Por otro lado, las regiones de África del Norte y Medio oriente y Latinoamérica y el Caribe tienen una distribucion estimada de expectativa de vida bastante similar, a pesar de en las mismas regiones haya países con desarrollo economico, social y político bastante dispares, por ejemplo, Israel con respecto a Afghanistan, o Chile con respecto a Haití, estas regiones en general, tienen una mayor infraestructura social, economica y política que les permite participar activamente en el comercio internacional, en general, son paises en vías de desarrollo con una calidad de vida moderada.
+Por otra parte, la region de Europa y Asia central cuentan con una distribución de expectativa de vida con un promedio de vida mayor al de las regiones anteriores y cercano a la region de Norteamérica cercana a los 80 años, pero con una minoria importante de países entre los 70 y 75, esto se debe a que a pesar de que Europa, en especial, Europa Occidental es una región bastante desarrollada en términos economicos, sociales y políticos y es una de las regiones más importantes en terminos economicos, la región de Asia Central tiene páises periféricos con un nivel de desarrollo social, económico y político mucho menor.
+Por último, la región de Norteamérica tiene una distribución bastante consolidada en una expectativa de vida cercana a los 80 años, esto se debe a que igual que Europa son otra region bastante desarrollada en terminos sociales, economicos y políticos y tambien es una de las regiones más importantes en términos económicos, basicamente por los países de Canadá y Estados Unidos que son países muy desarrollados con un nivel de vida elevado.
+
+16. Descargue lOS microdatos de la Gran Encuesta Integrada de Hogares para el mes de febrero de 2021. Use un loop for para importar los datos que corresponden a los módulos cabecera y resto. 
+```{r}
+y <- list.files("Febrero GEIH/")
+# Febrero GEIH es el nombre de la carpeta descargada con los microdatos de la Gran Encuesta Integrada de Hogares para el mes de febrero de 2021.
+x <- c()
+for (i in seq_along(y)) {
+  x[i] <- paste0("w",i)
+  z <- read_delim(paste0("Febrero GEIH/",y[i]),delim = ";")
+  assign(x[i],z)
+}
+head(y)
+#View(y)
+```
+
+Para los módulos de cabecera, una el módulo de características generales (personas) y el de vivienda y hogares. 
+```{r}
+v <- left_join(w1,w8, by = c("DIRECTORIO","SECUENCIA_P"))
+
+for (i in 2:7) {
+  v <- left_join(v,get(paste0("w",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
+}
+head(v)
+#View(v)
+```
+
+Después, use un loop for para unir los módulos restantes. Repita el mismo ejercicio para los módulos de resto. Cuando haya terminado, una cabecera y resto usando la función bind_rows. Al final, tendrá la información nacional de la GEIH para el mes de febrero de 2021.
+
+```{r}
+u <- left_join(w9,w16, by = c("DIRECTORIO","SECUENCIA_P"))
+
+for (i in 10:15) {
+  u <- left_join(u,get(paste0("w",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
+}
+head(u)
+#View(u)
+```
+
+```{r}
+febrero <- bind_rows(v,u)
+head(febrero)
+#View(febrero)
+```
+
+17. Usando la base resultante en el punto anterior, emplee la función mutate, en conjunto con la función across para convertir en factor las variables P6250, P6020, P6440, P7310, y P7439 (Revisen el diccionario de datos para ver el contenido de cada una de estas variables). En cada una de estas variables la categoría 1 debe tener la etiqueta Sí, y la categoría 2 debe tener la etiqueta No.
+```{r}
+febrero <- febrero %>%
+  mutate(across(.cols = c(P6250, P6020, P6440, P7310,P7430), .fns= factor)) %>%
+  mutate(across(.cols = c(P6250, P6020, P6440,
+P7310,P7430), ~recode(.x,"1"="sí","2"="no")))
+head(febrero)
+#VIew(febrero)
+```
+
+18. 1. Importen la base de datos de contagios de la Covid 19 para Colombia. Pueden usar la siguiente función:
+```{r}
+covid_19 <- read_csv("https://www.datos.gov.co/api/views/gt2j-8ykr/rows.csv?accessType=DOWNLOAD")
+head(covid_19)
+#View(covid_19)
+```
+2. Cambien el nombre a la variable fecha reporte web a fecha_reporte.
+```{r}
+covid19 <- covid_19 %>% rename(fecha_reporte =`fecha reporte web`)
+head(covid19)
+#View(covid19)
+```
+
+3. Asegúrese de que la variable fecha_reporte es identificada por R como una fecha.
+```{r}
+Covid_19 <- covid19 %>% 
+  separate(fecha_reporte, c("fecha_reporte", "hora"), " ") %>%
+  select(-"hora") %>%
+  mutate(fecha_reporte1 = dmy(fecha_reporte)) %>%
+  select(-fecha_reporte)
+class(Covid_19$fecha_reporte1)
+head(Covid_19)
+#View(Covid_19)
+```
+
+4. Use la función summarize o la función count en conjunto con la función group_by para contar el número de casos que se ha reportado en cada fecha de reporte.
+
+```{r}
+Covid19 <- Covid_19 %>% 
+  group_by(fecha_reporte1) %>% count(fecha_reporte1)
+head(Covid19)
+#View(a)
+```
+
+5. Realice un diagrama de líneas para mostrar la evolución del número de casos diarios en Colombia durante la pandemia.
+```{r}
+ggplot(Covid19,
+       mapping = aes(x = fecha_reporte1,
+         y = n)) +
+  geom_line(color = "blue") +
+  labs(title = "Evolución de numero de casos Covid-19 en Colombia", 
+       x = "Fecha.", 
+       y = "Número de casos.") +
+  theme_light()
+```
+
+6. [Bono por 0,5] Cree una variable que contenga para cada día, el promedio móvil de casos de los 7 días anteriores. Realice el mismo diagrama de líneas pero usando la variable que acaba de crear.
+```{r}
+
+```
+
+19. Agrégueme como colaborador en el repositorio de Github y publique el link del repositorio, junto con la versión html del notebook en el Aula Virtual, en el espacio que crearé para ello.
+```{r}
+
+```

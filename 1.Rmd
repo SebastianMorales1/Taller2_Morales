@@ -216,40 +216,56 @@ Por último, la región de Norteamérica tiene una distribución bastante consol
 
 16. Descargue lOS microdatos de la Gran Encuesta Integrada de Hogares para el mes de febrero de 2021. Use un loop for para importar los datos que corresponden a los módulos cabecera y resto. 
 ```{r}
-archivos <- list.files("data/")
-variables <- c()
-for (i in seq_along(archivos)) {
-  variables[i] <- paste0("vec",i)
-  data <- read_delim(paste0("data/",archivos[i]),delim = ";")
-  assign(variables[i],data)
+y <- list.files("Febrero GEIH/")
+# Febrero GEIH es el nombre de la carpeta descargada con los microdatos de la Gran Encuesta Integrada de Hogares para el mes de febrero de 2021.
+x <- c()
+for (i in seq_along(y)) {
+  x[i] <- paste0("w",i)
+  z <- read_delim(paste0("Febrero GEIH/",y[i]),delim = ";")
+  assign(x[i],z)
 }
+head(y)
+#View(y)
 ```
 
-Para los módulos de cabecera, una el módulo de características generales (personas) y el de vivienda y hogares. Después, use un loop for para unir los módulos restantes. Repita el mismo ejercicio para los módulos de resto. Cuando haya terminado, una cabecera y resto usando la función bind_rows. Al final, tendrá la información nacional de la GEIH para el mes de febrero de 2021.
+Para los módulos de cabecera, una el módulo de características generales (personas) y el de vivienda y hogares. 
 ```{r}
-cabecera <- left_join(vec1,vec8, by = c("DIRECTORIO","SECUENCIA_P"))
+v <- left_join(w1,w8, by = c("DIRECTORIO","SECUENCIA_P"))
 
 for (i in 2:7) {
-  cabecera <- left_join(cabecera,get(paste0("vec",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
+  v <- left_join(v,get(paste0("w",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
 }
-head(cabecera)
+head(v)
+#View(v)
 ```
 
+Después, use un loop for para unir los módulos restantes. Repita el mismo ejercicio para los módulos de resto. Cuando haya terminado, una cabecera y resto usando la función bind_rows. Al final, tendrá la información nacional de la GEIH para el mes de febrero de 2021.
+
+
 ```{r}
-resto <- left_join(vec9,vec16, by = c("DIRECTORIO","SECUENCIA_P"))
+u <- left_join(w9,w16, by = c("DIRECTORIO","SECUENCIA_P"))
 
 for (i in 10:15) {
-  resto <- left_join(resto,get(paste0("vec",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
+  u <- left_join(u,get(paste0("w",i)),by = c("DIRECTORIO","SECUENCIA_P","ORDEN"))
 }
+head(u)
+#View(u)
 ```
 
 ```{r}
-geih_feb21 <- bind_rows(cabecera,resto)
+febrero <- bind_rows(v,u)
+head(febrero)
+#View(febrero)
 ```
 
 17. Usando la base resultante en el punto anterior, emplee la función mutate, en conjunto con la función across para convertir en factor las variables P6250, P6020, P6440, P7310, y P7439 (Revisen el diccionario de datos para ver el contenido de cada una de estas variables). En cada una de estas variables la categoría 1 debe tener la etiqueta Sí, y la categoría 2 debe tener la etiqueta No.
 ```{r}
-
+febrero <- febrero %>%
+  mutate(across(.cols = c(P6250, P6020, P6440, P7310,P7430), .fns= factor)) %>%
+  mutate(across(.cols = c(P6250, P6020, P6440,
+P7310,P7430), ~recode(.x,"1"="sí","2"="no")))
+head(febrero)
+#VIew(febrero)
 ```
 
 18. 1. Importen la base de datos de contagios de la Covid 19 para Colombia. Pueden usar la siguiente función:
@@ -268,7 +284,9 @@ head(covid19)
 3. Asegúrese de que la variable fecha_reporte es identificada por R como una fecha.
 ```{r}
 Covid_19 <- covid19 %>% 
-  mutate(fecha_reporte1 = date(fecha_reporte)) %>%
+  separate(fecha_reporte, c("fecha_reporte", "hora"), " ") %>%
+  select(-"hora") %>%
+  mutate(fecha_reporte1 = dmy(fecha_reporte)) %>%
   select(-fecha_reporte)
 class(Covid_19$fecha_reporte1)
 head(Covid_19)
@@ -278,22 +296,22 @@ head(Covid_19)
 4. Use la función summarize o la función count en conjunto con la función group_by para contar el número de casos que se ha reportado en cada fecha de reporte.
 
 ```{r}
-a <- Covid_19 %>% 
+Covid19 <- Covid_19 %>% 
   group_by(fecha_reporte1) %>% count(fecha_reporte1)
-head(a)
-View(a)
+head(Covid19)
+#View(a)
 ```
 
 5. Realice un diagrama de líneas para mostrar la evolución del número de casos diarios en Colombia durante la pandemia.
 ```{r}
-ggplot(a,
+ggplot(Covid19,
        mapping = aes(x = fecha_reporte1,
          y = n)) +
-  geom_line(color = "black") +
-  labs(title = "Colombia: Casos de Covid-19", 
-       x = "Fecha", 
-       y = "Número de casos") +
-  theme_linedraw()
+  geom_line(color = "blue") +
+  labs(title = "Evolución de numero de casos Covid-19 en Colombia", 
+       x = "Fecha.", 
+       y = "Número de casos.") +
+  theme_light()
 ```
 
 6. [Bono por 0,5] Cree una variable que contenga para cada día, el promedio móvil de casos de los 7 días anteriores. Realice el mismo diagrama de líneas pero usando la variable que acaba de crear.

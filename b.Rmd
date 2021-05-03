@@ -12,7 +12,7 @@ output:
 
 3. Use la siguiente función para descargar de la API del Banco Mundial la información de los indicadores NY.ADJ.NNTY.PC.KD, que contiene el ingreso nacional per capita neto ajustado, y SP.DYN.LE00.IN que contiene la expectativa de vida al nacer para ambos sexos.
 
-Librerías varias.
+**Librerías varias.**
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -101,21 +101,21 @@ head(bm_principales)
 library(naniar)
 vis_miss(bm_principales) +
   labs(title = "Visualización de datos faltantes por columna.", 
-       x = "Porcentaje (%) de datos faltantes por columna",
+       x = "Porcentaje (%) de datos faltantes por columna.",
        y = "Observaciones.")
 ```
 
 ```{r}
 gg_miss_var(bm_principales) +
-  labs(title = "Número de datos faltantes por variable",
-       x = "Número de datos faltantes",
-       y = "Variables")
+  labs(title = "Número de datos faltantes por variable.",
+       x = "Número de datos faltantes.",
+       y = "Variables.")
 ```
 
 
 **Comentario:**
 
-La variable con mayor numero de datos faltantes es ing_nac_ajustado.
+La variable con mayor número de datos faltantes es ing_nac_ajustado.
 
 11. Use la función gg_miss_fct para mostrar el comportamiento de los valores faltantes en esta base de datos, de acuerdo con las categorías de la variable region. ¿En cuál región parecen haber más valores faltantes para las variables expectativa_vida e ing_nac_ajustado? Repita el ejercicio pero ahora usando la variable income_level. ¿En cuál nivel de ingreso parecen haber más valores faltantes para las variables mencionadas.
 
@@ -138,7 +138,7 @@ gg_miss_fct(bm_principales, income_level) +
 
 En la región de Asia Oriental y el Pacífico parece tener más datos faltantes de la variable "ing_nac_ajustado". Igualmente, las regiones de Asia oriental y el Pacífico y Latinoamérica y el Caribe parecen tener más datos faltantos que el resto de regiones en la variable "expectativa_vida".
 
-- El nivel de ingreso alto parece tener más datos faltantes con respecto al resto de niveles de ingreso, tanto para la variable "ing_nac_ajustado" como para la variable "expectativa_vida".
+Igualmente, el nivel de ingreso alto parece tener más datos faltantes con respecto al resto de niveles de ingreso, tanto para la variable "ing_nac_ajustado" como para la variable "expectativa_vida".
 
 12. Filtre el año 2015 y realice un diagrama de dispersión de las variables expectativa_vida (eje y) e ing_nac_ajustado (eje x) para ese año. El color de los puntos debe depender de la variable region. ¿Qué muestra la gráfica sobre la relación entre las variables para el 2015?
 
@@ -183,7 +183,7 @@ ggplot(data = bm_colombia, mapping = aes(x = date, y = expectativa_vida)) +
 
 **Comentario:**
 
-El diagrama de expectativa de vida durante los años 2000 a 2019, muestra que la expectativa de vida crece de manera sostenida y uniforme en este periodo de tiempo.
+El diagrama de expectativa de vida durante los años 2000 a 2019, muestra que la expectativa de vida crece de manera sostenida y uniforme en este periodo de tiempo en Colombia.
 
 14. Filtre los años 2000 y 2015 y realice una densidad de la variable expectativa_vida en la que se muestre de un color distinto la distribución para cada uno de esos dos años. 
 ¿Qué diferencias se puede ver en la distribución de expectativa_vida para estos dos años?
@@ -223,11 +223,15 @@ ggplot(data = bm_principales,
 
 **Comentario:**
 
-En primer lugar, se observa que la region que, en general, cuenta con una menor expectativa de vida es África Sub-sahariana dónde se ubican gran parte de los países más pobres del mundo, con menor infraestructura social y economica y niveles bajos de calidad de vida y PIB per cápita.
-Después, le sigue el sudeste asiático con un mayor nivel de expectativa de vida ya que a pesar de que hay presencia de economías emergentes como Indonesia, Malasia o Vietnam y economias desarrolladas como Singapur o Brunei, las economias restantes del sudeste asiático cuenta con una menor infraestructura economica y social donde la economia regional depende de la agricultura, así como problemáticas sociales como pobreza y desigualdad, que dejan a la región con una expectativa de vida modesta menor a los 70 años. 
-Por otro lado, las regiones de África del Norte y Medio oriente y Latinoamérica y el Caribe tienen una distribucion estimada de expectativa de vida bastante similar, a pesar de en las mismas regiones haya países con desarrollo economico, social y político bastante dispares, por ejemplo, Israel con respecto a Afghanistan, o Chile con respecto a Haití, estas regiones en general, tienen una mayor infraestructura social, economica y política que les permite participar activamente en el comercio internacional, en general, son paises en vías de desarrollo con una calidad de vida moderada.
-Por otra parte, la region de Europa y Asia central cuentan con una distribución de expectativa de vida con un promedio de vida mayor al de las regiones anteriores y cercano a la region de Norteamérica cercana a los 80 años, pero con una minoria importante de países entre los 70 y 75, esto se debe a que a pesar de que Europa, en especial, Europa Occidental es una región bastante desarrollada en términos economicos, sociales y políticos y es una de las regiones más importantes en terminos economicos, la región de Asia Central tiene páises periféricos con un nivel de desarrollo social, económico y político mucho menor.
-Por último, la región de Norteamérica tiene una distribución bastante consolidada en una expectativa de vida cercana a los 80 años, esto se debe a que igual que Europa son otra region bastante desarrollada en terminos sociales, economicos y políticos y tambien es una de las regiones más importantes en términos económicos, basicamente por los países de Canadá y Estados Unidos que son países muy desarrollados con un nivel de vida elevado.
+En primer lugar, se observa que la región que, en general, cuenta con una menor expectativa de vida es África Sub-sahariana dónde se ubican gran parte de los países más pobres del mundo, con menor infraestructura social y economica y niveles bajos de calidad de vida y PIB per cápita.
+
+Posteriormente, le sigue el Sudeste Asiático con un mayor nivel de expectativa de vida ya que a pesar de que hay presencia de economías emergentes como Indonesia, Malasia o Vietnam y economias desarrolladas como Singapur o Brunei, las economias restantes del sudeste asiático cuenta con una menor infraestructura economica y social donde la economia regional depende basicamente de la agricultura, además, existen serias problemáticas sociales como pobreza y desigualdad, que dejan a la región con una expectativa de vida modesta menor a los 70 años. 
+
+Por otro lado, las regiones de África del Norte y Medio oriente y Latinoamérica y el Caribe tienen una distribucion estimada de expectativa de vida bastante similar, a pesar de en las mismas regiones haya países con desarrollo economico, social y político bastante dispares, por ejemplo, Israel con respecto a Afghanistan, o Chile con respecto a Haití, estas regiones en general, tienen una mayor infraestructura social, economica y política que les permite participar activamente en el comercio internacional y, en promedio, son paises en vías de desarrollo con una calidad de vida moderada.
+
+Por otra parte, la region de Europa y Asia central cuentan con una distribución de expectativa de vida y con un promedio de vida mayor al de las regiones anteriores y cercano a los 80 años, pero con una minoria importante de países entre los 70 y 75 años, esto se debe a que a pesar de que Europa, en especial, Europa Occidental es una región bastante desarrollada en términos economicos, sociales y políticos y es una de las regiones más importantes del mundo, la región de Asia Central tiene páises periféricos con un nivel de desarrollo social, económico y político mucho menor como Turmenkistán o Kirguistán.
+
+Por último, la región de Norteamérica tiene una distribución bastante consolidada en una expectativa de vida cercana a los 80 años, esto se debe a que igual que Europa, es otra region bastante desarrollada en terminos sociales, economicos y políticos y tambien es una de las regiones más importantes en términos económicos, basicamente por los países de Canadá y Estados Unidos que son países muy desarrollados y con un nivel de vida elevado.
 
 16. Descargue lOS microdatos de la Gran Encuesta Integrada de Hogares para el mes de febrero de 2021. Use un loop for para importar los datos que corresponden a los módulos cabecera y resto. 
 ```{r}
@@ -334,6 +338,6 @@ ggplot(Covid19,
 ```
 
 19. Agrégueme como colaborador en el repositorio de Github y publique el link del repositorio, junto con la versión html del notebook en el Aula Virtual, en el espacio que crearé para ello.
-```{r}
 
-```
+**Link del repositorio:**
+https://github.com/SebastianMorales1/Taller2_Morales

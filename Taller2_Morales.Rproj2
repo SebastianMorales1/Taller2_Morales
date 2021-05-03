@@ -1,7 +1,9 @@
 ---
 title: "Taller 2 y 3 de fundamentos de programación."
-output: html_notebook.
-author: Sebastián Morales.
+author: "Sebastián Morales."
+output:
+  html_notebook: default
+  html_notebook.: default
 ---
 
 1. Cree un repositorio de Github que se llame Taller2_Apellido. Use su primer apellido en reemplazo de la palabra Apellido en el nombre. Este repositorio debe ser privado.Después de crearlo, cree un proyecto en RStudio y vincúlelo al repositorio que creó.
@@ -321,4 +323,3 @@ ggplot(Covid19,
 ```{r}
 
 ```
-
